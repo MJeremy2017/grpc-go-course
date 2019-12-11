@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package protobuf;
+option go_package="protobuf";
+
+message sumRequest {
+    float num1 = 1;
+    float num2 = 2;
+}
+
+message sumResponse {
+    float summation = 1;
+}
+
+service sumService {
+    rpc sum(sumRequest) returns (sumResponse);
+}
