@@ -13,5 +13,5 @@ message sumResponse {
 }
 
 service sumService {
-    rpc sum(sumRequest) returns (sumResponse);
+    rpc sum(sumRequest) returns (sumResponse) {};
 }
