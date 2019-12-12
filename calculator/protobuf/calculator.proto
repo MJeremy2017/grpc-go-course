@@ -12,6 +12,16 @@ message sumResponse {
     float summation = 1;
 }
 
-service sumService {
+message primeNumberRequest {
+    int64 number = 1;
+}
+
+message primeNumberResponse {
+    int64 primeNumber = 1;
+}
+
+service CalculatorService {
     rpc sum(sumRequest) returns (sumResponse) {};
+
+    rpc primeNumberDecomposition(primeNumberRequest) returns (stream primeNumberResponse) {};
 }
