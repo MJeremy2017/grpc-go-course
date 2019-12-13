@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"github.com/grpc-go-course/greet/greetpb"
 	"google.golang.org/grpc"
+	"io"
 	"log"
 	"net"
 	"strconv"
+	"time"
 )
 
 type server struct {
@@ -32,12 +34,31 @@ func (*server) GreetManyTimes(req *greetpb.GreetManyTimesRequest, stream greetpb
 		}
 		stream.Send(res)
 
-		//time.Sleep(time.Second)
+		time.Sleep(time.Second)
 	}
 
 	return nil
+}
+
+func (*server) LongGreet(stream greetpb.GreetService_LongGreetServer) error {
+	result := "Hello "
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			// not necessarily to be end of file
+			return stream.SendAndClose(&greetpb.LongGreetResponse{
+				Result: result,
+			})
+		}
+		if err != nil {
+			log.Fatalf("Err [%v]", err)
+		}
+
+		result += req.Greeting.FirstName + "! "
+	}
 
 }
+
 
 func main() {
 

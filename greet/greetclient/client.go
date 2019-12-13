@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"context"
+	"time"
 )
 
 func main() {
@@ -24,6 +25,8 @@ func main() {
 	doUnary(client)
 
 	doServerStreaming(client)
+
+	doClientStreaming(client)
 
 }
 
@@ -66,5 +69,34 @@ func doServerStreaming(c greetpb.GreetServiceClient) {
 		log.Println("Streaming response -> ", msg.Result)
 
 	}
+
+}
+
+func doClientStreaming(c greetpb.GreetServiceClient) {
+	fmt.Println("Doing client side streaming")
+	requests := []*greetpb.LongGreetRequest{
+		&greetpb.LongGreetRequest{
+			Greeting: &greetpb.Greeting{FirstName: "A"},
+		},
+		&greetpb.LongGreetRequest{
+			Greeting: &greetpb.Greeting{FirstName: "B"},
+		},
+		&greetpb.LongGreetRequest{
+			Greeting: &greetpb.Greeting{FirstName: "C"},
+		},
+	}
+	stream, err := c.LongGreet(context.Background())
+	if err != nil {
+		log.Fatalf("Err [%v]", err)
+	}
+
+	for _, req := range requests {
+		stream.Send(req)
+		time.Sleep(time.Second)
+	}
+
+	resp, _ := stream.CloseAndRecv()
+	log.Printf("Response -> %v", resp)
+
 
 }
