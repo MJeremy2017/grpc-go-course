@@ -49,7 +49,7 @@ func doStreamingServer(number int64, c protobuf.CalculatorServiceClient) {
 		if err == io.EOF {
 			break
 		}
-		log.Println("Response -> ", resp.PrimeNumber)
+		log.Printf("Response -> %v \n", resp.PrimeNumber)
 	}
 
 }
