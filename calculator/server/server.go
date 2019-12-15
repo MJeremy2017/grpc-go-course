@@ -5,6 +5,7 @@ import (
 	"github.com/grpc-go-course/calculator/protobuf"
 	"google.golang.org/grpc"
 	"context"
+	"io"
 	"log"
 	"net"
 )
@@ -42,6 +43,27 @@ func (*server) PrimeNumberDecomposition(req *protobuf.PrimeNumberRequest, stream
 	}
 
 	return nil
+}
+
+func (*server) ComputeAverage(stream protobuf.CalculatorService_ComputeAverageServer) error {
+	sum := float32(0)
+	count := float32(0)
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			return stream.SendAndClose(&protobuf.ComputeAverageResponse{
+				Result: sum/count,
+			})
+		}
+		if err != nil {
+			log.Fatalf("Err [%v]", err)
+		}
+
+		log.Println("received float ", req.Number)
+		sum += req.Number
+		count += 1
+	}
+
 }
 
 func main() {

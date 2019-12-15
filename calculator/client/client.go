@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 	"io"
 	"log"
+	"time"
 )
 
 func main() {
@@ -21,6 +22,9 @@ func main() {
 
 	doUnary(client)
 	doStreamingServer(42104500, client)
+
+	floatSlice := []float32{1, 2, 3.2}
+	doClientStreaming(floatSlice, client)
 }
 
 func doUnary(c protobuf.CalculatorServiceClient) {
@@ -51,5 +55,30 @@ func doStreamingServer(number int64, c protobuf.CalculatorServiceClient) {
 		}
 		log.Printf("Response -> %v \n", resp.PrimeNumber)
 	}
+
+}
+
+func doClientStreaming(floatSlice []float32, c protobuf.CalculatorServiceClient) {
+
+	stream, err := c.ComputeAverage(context.Background())
+	if err != nil {
+		log.Fatalf("Err [%v]", err)
+	}
+
+	for _, f := range floatSlice {
+		err := stream.Send(&protobuf.ComputeAverageRequest{
+			Number: f,
+		})
+		time.Sleep(time.Second)
+
+		if err != nil {
+			log.Fatalf("Err [%v]", err)
+		}
+
+	}
+
+	resp, _ := stream.CloseAndRecv()
+
+	log.Printf("Response avg -> [%v]", resp.Result)
 
 }
