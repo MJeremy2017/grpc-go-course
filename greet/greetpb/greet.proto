@@ -8,6 +8,7 @@ message Greeting {
     string last_name = 2;
 }
 
+// Unary
 message GreetRequest {
     Greeting greeting = 1;
 }
@@ -16,6 +17,7 @@ message GreetResponse {
     string result = 1;
 }
 
+// Server streaming
 message GreetManyTimesRequest {
     Greeting greeting = 1;
 }
@@ -24,11 +26,21 @@ message GreetManyTimesResponse {
     string result = 1;
 }
 
+// Client streaming
 message LongGreetRequest {
     Greeting greeting = 1;
 }
 
 message LongGreetResponse {
+    string result = 1;
+}
+
+// BiDi streaming
+message GreetEveryoneRequest {
+    Greeting greeting = 1;
+}
+
+message GreetEveryoneResponse {
     string result = 1;
 }
 
@@ -41,4 +53,7 @@ service GreetService {
 
     // Client side streaming
     rpc LongGreet(stream LongGreetRequest) returns (LongGreetResponse) {};
+
+    // BiDi streaming
+    rpc GreetEveryOne(stream GreetEveryoneRequest) returns (stream GreetEveryoneResponse) {};
 }
