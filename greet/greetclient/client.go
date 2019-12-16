@@ -28,6 +28,8 @@ func main() {
 
 	doClientStreaming(client)
 
+	DoBiDiStreaming(client)
+
 }
 
 func doUnary(c greetpb.GreetServiceClient)  {
@@ -75,13 +77,13 @@ func doServerStreaming(c greetpb.GreetServiceClient) {
 func doClientStreaming(c greetpb.GreetServiceClient) {
 	fmt.Println("Doing client side streaming")
 	requests := []*greetpb.LongGreetRequest{
-		&greetpb.LongGreetRequest{
+		{
 			Greeting: &greetpb.Greeting{FirstName: "A"},
 		},
-		&greetpb.LongGreetRequest{
+		{
 			Greeting: &greetpb.Greeting{FirstName: "B"},
 		},
-		&greetpb.LongGreetRequest{
+		{
 			Greeting: &greetpb.Greeting{FirstName: "C"},
 		},
 	}
@@ -99,4 +101,54 @@ func doClientStreaming(c greetpb.GreetServiceClient) {
 	log.Printf("Response -> %v", resp)
 
 
+}
+
+func DoBiDiStreaming(c greetpb.GreetServiceClient) {
+	fmt.Println("Doing bidirectional streaming ...")
+
+	requests := []*greetpb.GreetEveryoneRequest{
+		{
+			Greeting: &greetpb.Greeting{FirstName: "A"},
+		},
+		{
+			Greeting: &greetpb.Greeting{FirstName: "B"},
+		},
+		{
+			Greeting: &greetpb.Greeting{FirstName: "C"},
+		},
+	}
+
+	stream, err := c.GreetEveryOne(context.Background())
+	if err != nil {
+		log.Fatalf("Err [%v]", err)
+	}
+
+	waitc := make(chan struct{})
+	// send messages to the client async
+	go func() {
+		for _, req := range requests {
+			fmt.Println("Sending msg -> ", req.Greeting)
+			stream.Send(req)
+			time.Sleep(time.Second)
+		}
+		stream.CloseSend()
+	}()
+
+	// receive messages
+	go func() {
+		for {
+			resp, err := stream.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				log.Fatalf("Err [%v]", err)
+				break
+			}
+			log.Printf("Response -> %v", resp.Result)
+		}
+		close(waitc)
+	}()
+
+	<- waitc
 }
