@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/grpc-go-course/calculator/protobuf"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 	"io"
 	"log"
 	"time"
@@ -28,6 +29,26 @@ func main() {
 	doClientStreaming(floatSlice, client)
 
 	doBiDiStreaming(floatSlice, client)
+
+	doErrUnary(client)
+}
+
+func doErrUnary(c protobuf.CalculatorServiceClient) {
+	fmt.Println("Doing err unary ...")
+	request := &protobuf.SquareRootRequest{
+		Number: -10,
+	}
+	resp, err := c.SquareRoot(context.Background(), request)
+	if err != nil {
+		stat, ok := status.FromError(err)
+		if ok {
+			fmt.Printf("status code [%v] | status msg [%v]", stat.Code(), stat.Message())
+		} else {
+			log.Fatal(err)
+		}
+		return
+	}
+	log.Printf("Response => %v", resp.SquareRoot)
 }
 
 func doUnary(c protobuf.CalculatorServiceClient) {

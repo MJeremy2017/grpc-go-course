@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"github.com/grpc-go-course/calculator/protobuf"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"io"
 	"log"
+	"math"
 	"net"
 )
 
@@ -82,6 +85,17 @@ func (*server) ComputeMaximum(stream protobuf.CalculatorService_ComputeMaximumSe
 			})
 		}
 	}
+}
+
+func (*server) SquareRoot(ctx context.Context, request *protobuf.SquareRootRequest) (*protobuf.SquareRootResponse, error) {
+	input := request.Number
+	if (input < 0) {
+		return nil, status.Errorf(codes.InvalidArgument, "Input should not be negative!")
+	} else {
+		resp := math.Sqrt(float64(input))
+		return &protobuf.SquareRootResponse{SquareRoot: float32(resp)}, nil
+	}
+
 }
 
 func main() {

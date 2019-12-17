@@ -36,6 +36,14 @@ message computeMaximumResponse {
     float maxNumber = 1;
 }
 
+message squareRootRequest {
+    float number = 1;
+}
+
+message squareRootResponse {
+    float squareRoot = 1;
+}
+
 service CalculatorService {
     rpc sum(sumRequest) returns (sumResponse) {};
 
@@ -44,5 +52,7 @@ service CalculatorService {
     rpc computeAverage(stream computeAverageRequest) returns (computeAverageResponse) {};
 
     rpc computeMaximum(stream computeMaximumRequest) returns (stream computeMaximumResponse) {};
+
+    rpc squareRoot(squareRootRequest) returns (squareRootResponse) {};
 
 }
