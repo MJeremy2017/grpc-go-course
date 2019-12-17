@@ -1,10 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/grpc-go-course/calculator/protobuf"
 	"google.golang.org/grpc"
-	"context"
 	"io"
 	"log"
 	"net"
@@ -64,6 +64,24 @@ func (*server) ComputeAverage(stream protobuf.CalculatorService_ComputeAverageSe
 		count += 1
 	}
 
+}
+
+func (*server) ComputeMaximum(stream protobuf.CalculatorService_ComputeMaximumServer) error {
+	currMax := float32(0)
+	for {
+		resp, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		currNumber := resp.Number
+		if (currNumber > currMax) {
+			currMax = currNumber
+
+			err = stream.Send(&protobuf.ComputeMaximumResponse{
+				MaxNumber: currMax,
+			})
+		}
+	}
 }
 
 func main() {
