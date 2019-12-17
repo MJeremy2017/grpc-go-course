@@ -28,11 +28,21 @@ message computeAverageResponse {
     float result = 1;
 }
 
+message computeMaximumRequest {
+    float number = 1;
+}
+
+message computeMaximumResponse {
+    float maxNumber = 1;
+}
+
 service CalculatorService {
     rpc sum(sumRequest) returns (sumResponse) {};
 
     rpc primeNumberDecomposition(primeNumberRequest) returns (stream primeNumberResponse) {};
 
     rpc computeAverage(stream computeAverageRequest) returns (computeAverageResponse) {};
+
+    rpc computeMaximum(stream computeMaximumRequest) returns (stream computeMaximumResponse) {};
 
 }
