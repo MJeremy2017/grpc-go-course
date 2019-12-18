@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/grpc-go-course/greet/greetpb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 	"io"
 	"log"
 	"context"
@@ -34,7 +35,6 @@ func main() {
 
 func doUnary(c greetpb.GreetServiceClient)  {
 	fmt.Println("Doing unary call ...")
-
 	request := &greetpb.GreetRequest{
 		Greeting: &greetpb.Greeting{
 			FirstName: "jeremy",
@@ -42,7 +42,17 @@ func doUnary(c greetpb.GreetServiceClient)  {
 		},
 	}
 
-	response, _ := c.Greet(context.Background(), request)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)  // set timeout
+	defer cancel()
+
+	response, err := c.Greet(ctx, request)
+	if err != nil {
+		statusErr, ok := status.FromError(err)
+		if ok {
+			log.Fatalf("status code [%v], msg [%v]", statusErr.Code(), statusErr.Message())
+		}
+		return
+	}
 	log.Printf("Response -> %v", response.Result)
 
 }

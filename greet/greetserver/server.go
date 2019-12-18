@@ -17,7 +17,8 @@ type server struct {
 }
 
 func (*server) Greet(ctx context.Context, req *greetpb.GreetRequest) (*greetpb.GreetResponse, error) {
-	result := "Hello " + req.Greeting.FirstName + req.Greeting.LastName
+	result := "Hello " + req.Greeting.FirstName
+	//time.Sleep(5*time.Second)  // for deadline test
 
 	response := &greetpb.GreetResponse{
 		Result: result,
