@@ -6,6 +6,7 @@ import (
 	"github.com/grpc-go-course/calculator/protobuf"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 	"io"
 	"log"
@@ -19,7 +20,7 @@ type server struct {
 
 func (*server) Sum(ctx context.Context, req *protobuf.SumRequest) (*protobuf.SumResponse, error) {
 
-	fmt.Println("received info -> ", req)
+	fmt.Printf("received info -> [%v]", req)
 
 	response := &protobuf.SumResponse{
 		Summation: req.Num1 + req.Num2,
@@ -90,7 +91,7 @@ func (*server) ComputeMaximum(stream protobuf.CalculatorService_ComputeMaximumSe
 func (*server) SquareRoot(ctx context.Context, request *protobuf.SquareRootRequest) (*protobuf.SquareRootResponse, error) {
 	input := request.Number
 	if (input < 0) {
-		return nil, status.Errorf(codes.InvalidArgument, "Input should not be negative!")
+		return nil, status.Error(codes.InvalidArgument, "Input should not be negative!")
 	} else {
 		resp := math.Sqrt(float64(input))
 		return &protobuf.SquareRootResponse{SquareRoot: float32(resp)}, nil
@@ -108,6 +109,9 @@ func main() {
 
 	s := grpc.NewServer()
 	protobuf.RegisterCalculatorServiceServer(s, &server{})
+
+	// register reflection service
+	reflection.Register(s)
 
 	s.Serve(lis)
 }
