@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package blog;
+option go_package = "blogpb";
+
+message Blog {
+    string id = 1;
+    string author_id = 2;
+    string title = 3;
+    string content = 4;
+}
+
+message createBlogRequest {
+    Blog blog = 1;
+}
+
+message createBlogResponse {
+    Blog blog = 1;
+}
+
+service BlogService {
+    rpc CreateBlog(createBlogRequest) returns (createBlogResponse) {};
+}
