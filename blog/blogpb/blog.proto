@@ -18,6 +18,16 @@ message createBlogResponse {
     Blog blog = 1;
 }
 
+message readBlogRequest {
+    string blog_id = 1;
+}
+
+message readBlogResponse {
+    Blog blog = 1;
+}
+
 service BlogService {
     rpc CreateBlog(createBlogRequest) returns (createBlogResponse) {};
+
+    rpc ReadBlog(readBlogRequest) returns (readBlogResponse) {};
 }
