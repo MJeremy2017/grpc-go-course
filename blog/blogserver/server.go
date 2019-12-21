@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/grpc-go-course/blog/blogpb"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -59,6 +60,32 @@ func (*server) CreateBlog(ctx context.Context, request *blogpb.CreateBlogRequest
 		},
 	}, nil
 
+}
+
+func (*server) ReadBlog(ctx context.Context, request *blogpb.ReadBlogRequest) (*blogpb.ReadBlogResponse, error) {
+	blog_id := request.BlogId
+	oid, err := primitive.ObjectIDFromHex(blog_id)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "Cannot parse id")
+	}
+
+	data := &blogItem{}
+	filter := bson.D{{"_id", oid}}
+	result := collection.FindOne(context.Background(), filter)
+
+	if err := result.Decode(data); err != nil {
+		return nil, err
+	}
+
+	response := &blogpb.ReadBlogResponse{
+		Blog: &blogpb.Blog{
+			Id: data.ID.Hex(),
+			AuthorId: data.AuthorID,
+			Content: data.Content,
+			Title: data.Title,
+		},
+	}
+	return response, nil
 }
 
 func main() {

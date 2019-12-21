@@ -28,6 +28,7 @@ func main() {
 		},
 	}
 
+	fmt.Println("creating blogs")
 	resp, err := client.CreateBlog(context.Background(), request)
 	if err != nil {
 		log.Fatal(err)
@@ -35,4 +36,14 @@ func main() {
 	}
 
 	fmt.Println("response => ", resp)
+
+	fmt.Println("reading blogs")
+	readRequest := &blogpb.ReadBlogRequest{
+		BlogId: resp.Blog.Id,
+	}
+
+	readResp, _ := client.ReadBlog(context.Background(), readRequest)
+	fmt.Println("response => ", readResp)
+
+
 }
