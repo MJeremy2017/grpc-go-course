@@ -78,15 +78,53 @@ func (*server) ReadBlog(ctx context.Context, request *blogpb.ReadBlogRequest) (*
 	}
 
 	response := &blogpb.ReadBlogResponse{
-		Blog: &blogpb.Blog{
-			Id: data.ID.Hex(),
-			AuthorId: data.AuthorID,
-			Content: data.Content,
-			Title: data.Title,
-		},
+		Blog: dataToBlog(data),
 	}
 	return response, nil
 }
+
+func (*server) UpdateBlog(ctx context.Context, request *blogpb.UpdateBlogRequest) (*blogpb.UpdateBlogResponse, error) {
+
+	blog := request.Blog
+	oid, err := primitive.ObjectIDFromHex(blog.Id)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "Cannot parse id")
+	}
+
+	// find the blog
+	data := &blogItem{}
+	filter := bson.D{{"_id", oid}}
+	result := collection.FindOne(context.Background(), filter)
+
+	if err := result.Decode(data); err != nil {
+		return nil, err
+	}
+
+	// update content
+	data.Title = blog.Title
+	data.AuthorID = blog.AuthorId
+	data.Content = blog.Content
+
+	_, updateErr := collection.ReplaceOne(context.Background(), filter, data)
+	if updateErr != nil {
+		return nil, status.Error(codes.Internal, "Cannot update")
+	}
+
+	return &blogpb.UpdateBlogResponse{
+		Blog: dataToBlog(data),
+	}, nil
+
+}
+
+func dataToBlog(data *blogItem) *blogpb.Blog {
+	return &blogpb.Blog{
+		Id: data.ID.Hex(),
+		Title: data.Title,
+		AuthorId: data.AuthorID,
+		Content: data.Content,
+	}
+}
+
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
