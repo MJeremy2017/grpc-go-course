@@ -58,4 +58,12 @@ func main() {
 	updateResp, _ := client.UpdateBlog(context.Background(), updateRequest)
 	fmt.Printf("response => [%v]", updateResp)
 
+	fmt.Println("Deleting blogs")
+	deleteRequest := &blogpb.DeleteBlogRequest{
+		BlogId: resp.Blog.Id,
+	}
+
+	deleteResp, _ := client.DeleteBlog(context.Background(), deleteRequest)
+	fmt.Printf("response => [%v]", deleteResp)
+
 }
