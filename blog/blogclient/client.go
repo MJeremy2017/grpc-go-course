@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/grpc-go-course/blog/blogpb"
 	"google.golang.org/grpc"
+	"io"
 	"log"
 )
 
@@ -65,5 +66,18 @@ func main() {
 
 	deleteResp, _ := client.DeleteBlog(context.Background(), deleteRequest)
 	fmt.Printf("response => [%v]", deleteResp)
+
+	fmt.Println("Listing blogs")
+	respStream, err := client.ListBlog(context.Background(), &blogpb.ListBlogRequest{})
+	for {
+		resp, err := respStream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatalf("err reading result [%v]", err)
+		}
+		fmt.Printf("response => [%v]", resp.Blog)
+	}
 
 }

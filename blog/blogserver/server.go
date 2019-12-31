@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 	"log"
 	"net"
@@ -137,6 +138,36 @@ func (*server) DeleteBlog(ctx context.Context, request *blogpb.DeleteBlogRequest
 
 }
 
+func (*server) ListBlog(req *blogpb.ListBlogRequest, stream blogpb.BlogService_ListBlogServer) error {
+
+	cursor, err := collection.Find(context.Background(), nil)
+	if err != nil {
+		return err
+	}
+	defer cursor.Close(context.Background())
+
+	for cursor.Next(context.Background()) {
+		data := &blogItem{}
+		err := cursor.Decode(data)
+		if err != nil {
+			return status.Errorf(codes.Internal, fmt.Sprintf("cannot decode [%v]", err))
+		}
+
+		resp := &blogpb.ListBlogResponse{Blog: dataToBlog(data)}
+		sendErr := stream.Send(resp)
+		if sendErr != nil {
+			return status.Errorf(codes.Internal, "err sending [%v]", sendErr)
+		}
+	}
+
+	if cursor.Err() != nil {
+		return status.Errorf(codes.Internal, "do not know err [%v]", cursor.Err())
+	}
+
+	return nil
+
+}
+
 func dataToBlog(data *blogItem) *blogpb.Blog {
 	return &blogpb.Blog{
 		Id: data.ID.Hex(),
@@ -172,6 +203,7 @@ func main() {
 
 	s := grpc.NewServer()
 	blogpb.RegisterBlogServiceServer(s, &server{})
+	reflection.Register(s)  // enable reflection on the service
 
 	go func() {
 		if err := s.Serve(lis); err != nil {
