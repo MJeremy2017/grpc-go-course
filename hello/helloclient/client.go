@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Hello client ...")
+	fmt.Println("Hello client running ...")
 
 	opts := grpc.WithInsecure()
 	cc, err := grpc.Dial("localhost:50051", opts)
